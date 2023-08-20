@@ -32,6 +32,10 @@ public class CordovaHttpPlugin extends CordovaPlugin implements Observer {
   private HashMap<Integer, Future<?>> reqMap;
   private final Object reqMapLock = new Object();
 
+  private boolean withProxy = false;
+  private String proxyHost = "";
+  private int proxyPort = 0;
+
   @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     super.initialize(cordova, webView);
@@ -105,6 +109,14 @@ public class CordovaHttpPlugin extends CordovaPlugin implements Observer {
       return this.uploadFiles(args, callbackContext);
     } else if ("downloadFile".equals(action)) {
       return this.downloadFile(args, callbackContext);
+    } else if ("setProxy".equals(action)) {
+      String host = args.getString(0);
+      int port = args.getInt(1);
+      proxyHost = host;
+      proxyPort = port;
+      withProxy = true;
+      callbackContext.success();
+      return true;
     } else {
       return false;
     }
@@ -196,6 +208,10 @@ public class CordovaHttpPlugin extends CordovaPlugin implements Observer {
 
   private void startRequest(Integer reqId, CordovaObservableCallbackContext observableCallbackContext, CordovaHttpBase request) {
     synchronized (reqMapLock) {
+      if (withProxy) {
+        withProxy = false;
+        request.setProxy(proxyHost, proxyPort);
+      }
       observableCallbackContext.setObserver(this);
       Future<?> task = cordova.getThreadPool().submit(request);
       this.addReq(reqId, task, observableCallbackContext);

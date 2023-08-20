@@ -34,7 +34,10 @@ module.exports = function init(exec, cookieHandler, urlUtil, helpers, globalConf
     downloadFile: downloadFile,
     abort: abort,
     ErrorCode: errorCodes,
-    ponyfills: ponyfills
+    ponyfills: ponyfills,
+    setProxy: function(host, port, success, failure) {
+      return exec(success, failure, 'CordovaHttpPlugin', 'setProxy', [ host, port ]);
+    },
   };
 
   function getBasicAuthHeader(username, password) {

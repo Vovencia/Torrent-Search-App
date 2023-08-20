@@ -40,6 +40,9 @@ abstract class CordovaHttpBase implements Runnable {
   protected boolean followRedirects;
   protected TLSConfiguration tlsConfiguration;
   protected CordovaObservableCallbackContext callbackContext;
+  protected boolean withProxy = false;
+  protected String proxyHost = "";
+  protected int proxyPort = 0;
 
   public CordovaHttpBase(String method, String url, String serializer, Object data, JSONObject headers, int connectTimeout,
       int readTimeout, boolean followRedirects, String responseType, TLSConfiguration tlsConfiguration,
@@ -70,6 +73,12 @@ abstract class CordovaHttpBase implements Runnable {
     this.responseType = responseType;
     this.tlsConfiguration = tlsConfiguration;
     this.callbackContext = callbackContext;
+  }
+
+  public void setProxy(String proxyHost, int proxyPort) {
+    this.withProxy = true;
+    this.proxyHost = proxyHost;
+    this.proxyPort = proxyPort;
   }
 
   @Override
@@ -130,6 +139,12 @@ abstract class CordovaHttpBase implements Runnable {
   }
 
   protected void prepareRequest(HttpRequest request) throws JSONException, IOException {
+    if (this.withProxy) {
+      // request.proxyHost(this.proxyHost);
+      // request.proxyPort(this.proxyPort);
+      request.useProxy(this.proxyHost, this.proxyPort);
+    }
+
     request.followRedirects(this.followRedirects);
     request.connectTimeout(this.connectTimeout);
     request.readTimeout(this.readTimeout);
